@@ -1,6 +1,6 @@
 # final-project-final-project-team-3
 
-## --Tarpaulin--
+** Tarpaulin**
 
 <p>Christopher Weiner<br>
 Sierra Freihoefer<br>
