@@ -35,6 +35,15 @@ async function getUserById(id, includePassword){
 }
 exports.getUserById = getUserById
 
+async function validateUser(email,password){
+    const db = getDBReference()
+    const collection = db.collection('users')
+    const user = collection.find({email: email}).toArray()
+    const authenticated = user[0] && await bcrypt.compare(password,user[0].password)
+    return authenticated
+}
+exports.validateUser = validateUser
+
 async function bulkInsertNewUsers(users){
     const usersToInsert = users.map(function (user){
         return extractValidFields(user,UserSchema)
