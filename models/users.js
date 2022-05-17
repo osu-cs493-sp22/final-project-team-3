@@ -2,7 +2,7 @@ const {ObjectId} = require('mongodb')
 const bcrypt = require('bcryptjs')
 
 const {extractValidFields} = require('../lib/validation')
-const {getDBReference} = require('../lib/mongo')
+const {getDbReference} = require('../lib/mongo')
 
 const UserSchema = {
     name:       {required: true},
@@ -16,7 +16,7 @@ async function insertNewUser(user){
     const userToInsert = extractValidFields(user,UserSchema)
     userToInsert.password = await bcrypt.hash(userToInsert.password,8)
     console.log("== Hashed, salted password: ",userToInsert.password)
-    const db = getDBReference()
+    const db = getDbReference()
     const collection = db.collection('users')
     const result = await collection.insertOne(userToInsert)
     return result.insertedId
@@ -24,7 +24,7 @@ async function insertNewUser(user){
 exports.insertNewUser = insertNewUser
 
 async function getUserById(id, includePassword){
-    const db = getDBReference()
+    const db = getDbReference()
     const collection = db.collection('users')
     if(!ObjectId.isValid(id)){
         return null
@@ -36,9 +36,10 @@ async function getUserById(id, includePassword){
 exports.getUserById = getUserById
 
 async function validateUser(email,password){
-    const db = getDBReference()
+    const db = getDbReference()
     const collection = db.collection('users')
-    const user = collection.find({email: email}).toArray()
+    const user = await collection.find({email: email}).toArray()
+    console.log(user)
     const authenticated = user[0] && await bcrypt.compare(password,user[0].password)
     return authenticated
 }
@@ -50,7 +51,7 @@ async function bulkInsertNewUsers(users){
         userToInsert.password = bcrypt.hashSync(userToInsert.password,8)
         return userToInsert
     })
-    const db = getDBReference()
+    const db = getDbReference()
     const collection = db.collection('users')
     const result = await collection.insertMany(usersToInsert)
     return result.insertedIds
@@ -58,7 +59,7 @@ async function bulkInsertNewUsers(users){
 exports.bulkInsertNewUsers = bulkInsertNewUsers
 
 async function getInstructorCourses(id){
-    const db = getDBReference()
+    const db = getDbReference()
     const collection = db.collection('courses')
     const results = await collection.find( {instructorId: new ObjectId(id)}, {subject:0,number:0,title:0,term:0,enrolled:0,assignments:0}).toArray()
     return results
@@ -66,7 +67,7 @@ async function getInstructorCourses(id){
 exports.getInstructorCourses = getInstructorCourses
 
 async function getStudentCourses(id){
-    const db = getDBReference()
+    const db = getDbReference()
     const collection = db.collection('courses')
     const results = await collection.find({"enrolled": {$in:[new ObjectId(id)]}},{subject:0,number:0,title:0,term:0,instructorId:0,assignments:0}).toArray()
     return results

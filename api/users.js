@@ -29,7 +29,10 @@ router.post('/', async function (req,res,next){
             })
         }
     }else if((req.body.role === "admin" || req.body.role === "instructor")){
-        const requestingUser = await checkAuthentication()
+        console.log(req.body.role)
+        const authHeader = req.headers.authorization
+        console.log(authHeader)
+        const requestingUser = await checkAuthentication(authHeader)
         const permission = await getUserById(requestingUser,false)
 
         if(permission && permission.role === "admin"){
