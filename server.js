@@ -43,8 +43,8 @@ app.use('*', function (err, req, res, next) {
   })
 })
 
-connectToDb(() => {
-  app.listen(port, () => {
-    console.log("== DB Server is listening on port:", port);
+connectToDb(function () {
+  app.listen(port, function () {
+    console.log("== Server is running on port", port)
   })
 })
