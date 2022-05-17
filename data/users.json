@@ -1,0 +1,20 @@
+[
+    {
+        "name": "Test Admin",
+        "email": "admin@email.com",
+        "password": "hunter2",
+        "role": "admin"
+    },
+    {
+        "name": "Test Student",
+        "email": "student@email.com",
+        "password": "hunter2",
+        "role": "student"
+    },
+    {
+        "name": "Test Instructor",
+        "email": "instructor@email.com",
+        "password": "hunter2",
+        "role": "instructor"
+    }
+]
