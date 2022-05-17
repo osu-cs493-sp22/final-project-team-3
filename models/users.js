@@ -54,3 +54,19 @@ async function bulkInsertNewUsers(users){
     return result.insertedIds
 }
 exports.bulkInsertNewUsers = bulkInsertNewUsers
+
+async function getTeacherCourses(id){
+    const db = getDBReference()
+    const collection = db.collection('courses')
+    const results = await collection.find( {instructorId: new ObjectId(id)}, {subject:0,number:0,title:0,term:0,enrolled:0,assignments:0}).toArray()
+    return results
+}
+exports.getTeacherCourses = getTeacherCourses
+
+async function getStudentCourses(id){
+    const db = getDBReference()
+    const collection = db.collection('courses')
+    const results = await collection.find({"enrolled": {$in:[new ObjectId(id)]}},{subject:0,number:0,title:0,term:0,instructorId:0,assignments:0}).toArray()
+    return results
+}
+exports.getStudentCourses = getStudentCourses
