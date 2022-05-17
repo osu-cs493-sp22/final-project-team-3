@@ -55,13 +55,13 @@ async function bulkInsertNewUsers(users){
 }
 exports.bulkInsertNewUsers = bulkInsertNewUsers
 
-async function getTeacherCourses(id){
+async function getInstructorCourses(id){
     const db = getDBReference()
     const collection = db.collection('courses')
     const results = await collection.find( {instructorId: new ObjectId(id)}, {subject:0,number:0,title:0,term:0,enrolled:0,assignments:0}).toArray()
     return results
 }
-exports.getTeacherCourses = getTeacherCourses
+exports.getInstructorCourses = getInstructorCourses
 
 async function getStudentCourses(id){
     const db = getDBReference()
