@@ -1,7 +1,7 @@
 const {ObjectId} = require('mongodb')
 const bcrypt = require('bcryptjs')
 
-const {extractValidFields} = require('../lib/validation.')
+const {extractValidFields} = require('../lib/validation')
 const {getDBReference} = require('../lib/mongo')
 
 const UserSchema = {
@@ -47,7 +47,7 @@ exports.validateUser = validateUser
 async function bulkInsertNewUsers(users){
     const usersToInsert = users.map(function (user){
         const userToInsert =  extractValidFields(user,UserSchema)
-        userToInsert.password = await bcrypt.hash(userToInsert.password,8)
+        userToInsert.password = bcrypt.hashSync(userToInsert.password,8)
         return userToInsert
     })
     const db = getDBReference()

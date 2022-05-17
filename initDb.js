@@ -1,7 +1,7 @@
 const { connectToDb, getDbReference, closeDbConnection } = require('./lib/mongo')
 const { bulkInsertNewUsers } = require('./models/users')
-const { bulkInsertNewAssignments } = require('./models/assignments')
-const { bulkInsertNewCourses } = require('./models/courses')
+//const { bulkInsertNewAssignments } = require('./models/assignments')
+//const { bulkInsertNewCourses } = require('./models/courses')
 
 const userData = require('./data/users.json')
 const assignmentData = require('./data/assignments.json')
@@ -18,11 +18,11 @@ connectToDb(async function () {
   const userIds = await bulkInsertNewUsers(userData)
   console.log("== Inserted users with IDs:", userIds)
 
-  const assignmentIds = await bulkInsertNewAssignments(assignmentData)
-  console.log("== Inserted assignments with IDs:", assignmentIds)
+  //const assignmentIds = await bulkInsertNewAssignments(assignmentData)
+  //console.log("== Inserted assignments with IDs:", assignmentIds)
 
-  const courseIds = await bulkInsertNewCourses(courseData)
-  console.log("== Inserted courses with IDs:", courseIds)
+  //const courseIds = await bulkInsertNewCourses(courseData)
+  //console.log("== Inserted courses with IDs:", courseIds)
   /*
    * Create a new, lower-privileged database user if the correct environment
    * variables were specified.

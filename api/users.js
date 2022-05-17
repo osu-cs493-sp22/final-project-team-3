@@ -105,3 +105,5 @@ router.get('/:id', requireAuthentication, async function (req, res, next){
         })
     }
 })
+
+module.exports = router
