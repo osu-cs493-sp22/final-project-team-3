@@ -12,7 +12,7 @@ const UserSchema = {
 }
 exports.UserSchema = UserSchema
 
-exports.insertNewUser = async function (user){
+async function insertNewUser(user){
     const userToInsert = extractValidFields(user,UserSchema)
     userToInsert.password = await bccrypt.hash(userToInsert.password,8)
     console.log("== Hashed, salted password: ",userToInsert.password)
@@ -21,8 +21,9 @@ exports.insertNewUser = async function (user){
     const result = await collection.insertOne(userToInsert)
     return result.insertedId
 }
+exports.insertNewUser = insertNewUser
 
-exports.getUserById = async function (id, includePassword){
+async function getUserById(id, includePassword){
     const db = getDBReference()
     const collection = db.collection('users')
     if(!ObjectId.isValid(id)){
@@ -32,3 +33,15 @@ exports.getUserById = async function (id, includePassword){
         return results[0]
     }
 }
+exports.getUserById = getUserById
+
+async function bulkInsertNewUsers(users){
+    const usersToInsert = users.map(function (user){
+        return extractValidFields(user,UserSchema)
+    })
+    const db = getDBReference()
+    const collection = db.collection('users')
+    const result = await collection.insertMany(usersToInsert)
+    return result.insertedIds
+}
+exports.bulkInsertNewUsers = bulkInsertNewUsers
