@@ -29,6 +29,7 @@ async function getUserById(id, includePassword){
     if(!ObjectId.isValid(id)){
         return null
     }else{
+        //console.log("id not null")
         const results = await collection.find({_id: new ObjectId(id)}).project(includePassword ? {}: {password:0}).toArray()
         return results[0]
     }
@@ -73,3 +74,14 @@ async function getStudentCourses(id){
     return results
 }
 exports.getStudentCourses = getStudentCourses
+
+async function getUserByEmail(passedEmail, includePassword){
+    const db = getDbReference()
+    const collection = db.collection('users')
+    console.log("about to get results")
+    const results = await collection.find({email: passedEmail}).project(includePassword ? {}: {password:0}).toArray()
+    console.log("get by email results:",results[0])
+    return results[0]
+
+}
+exports.getUserByEmail = getUserByEmail
