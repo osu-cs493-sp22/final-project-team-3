@@ -2,7 +2,7 @@ const { Router } = require('express')
 const bcrypt = require('bcryptjs')
 
 const {ValidateAgainstSchema, validateAgainstSchema} = require('../lib/validation')
-const {UserSchema, insertNewUser,getUserById, validateUser, getStudentCourses, getInstructorCourses, getUserByEmail} = require('../models/users')
+const {UserSchema, insertNewUser,getUserById, validateUser, getStudentCourses, getInstructorCourses, getUserByEmail} = require('../models/user')
 
 const {generateAuthToken, requireAuthentication, checkAuthentication} = require('../lib/auth')
 
