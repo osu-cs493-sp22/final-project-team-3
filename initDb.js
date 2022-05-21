@@ -1,7 +1,7 @@
 const { connectToDb, getDbReference, closeDbConnection } = require('./lib/mongo')
-const { bulkInsertNewUsers } = require('./models/users')
-//const { bulkInsertNewAssignments } = require('./models/assignments')
-//const { bulkInsertNewCourses } = require('./models/courses')
+const { bulkInsertNewUsers } = require('./models/user')
+//const { bulkInsertNewAssignments } = require('./models/assignment')
+//const { bulkInsertNewCourses } = require('./models/course')
 
 const userData = require('./data/users.json')
 const assignmentData = require('./data/assignments.json')

@@ -2,7 +2,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon server.js",
-    "start": "node server.js"
+    "start": "node server.js",
+    "initdb": "node initDb.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
