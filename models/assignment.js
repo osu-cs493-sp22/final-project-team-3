@@ -5,10 +5,10 @@ const {extractValidFields} = require('../lib/validation')
 const {getDbReference} = require('../lib/mongo')
 
 const AssignmentSchema = {
-    courseId:           {required: true},
-    title:              {required: true},
-    dueDate:            {required: true},
-    studentSubmissions: {required: true}
+    courseId:    {required: true},
+    title:       {required: true},
+    dueDate:     {required: true},
+    submissions: {required: true}
 }
 exports.AssignmentSchema = AssignmentSchema
 
@@ -21,13 +21,14 @@ exports.insertNewAssignment = async function insertNewAssignment(assignment){
     const result = await collection.insertOne(assignment)
     return result.insertedId
 }  
-  
+
 exports.getAssignmentById = async function getAssignmentById(id) {
     const db = getDbInstance()
+    const projection = {_id: 1, courseId: 1, title: 1, dueDate: 1, submissions: 0 }
     const collection = db.collection('assignments')
     const assignments = await collection.find({
         _id: new ObjectId(id)
-    }).toArray()
+    }).project(projection).toArray()
     return assignments[0]
 }
 
