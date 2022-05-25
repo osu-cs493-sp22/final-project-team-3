@@ -20,9 +20,9 @@ async function getCourseById(id){
     if(!ObjectId.isValid(id)){
         return null
     }else{
-        //console.log("id not null")
         const results = await collection.find({_id: new ObjectId(id)}).toArray()
         return results[0]
     }
 }
+
 exports.getCourseById = getCourseById
