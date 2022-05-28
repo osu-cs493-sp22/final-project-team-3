@@ -21,7 +21,7 @@ const EditableAssignmentSchema = {
 exports.EditableAssignmentSchema = EditableAssignmentSchema
 
 exports.insertNewAssignment = async function insertNewAssignment(assignment){
-    const db = getDbInstance()
+    const db = getDbReference()
     const collection = db.collection('assignments')
   
     assignment = extractValidFields(assignment, AssignmentSchema)
@@ -30,7 +30,7 @@ exports.insertNewAssignment = async function insertNewAssignment(assignment){
 }  
 
 exports.insertNewSubmission = async function insertNewSubmission(submission){
-    const db = getDbInstance()
+    const db = getDbReference()
     const collection = db.collection('submissions')
   
     submission = extractValidFields(submission, SubmissionSchema)
@@ -39,7 +39,7 @@ exports.insertNewSubmission = async function insertNewSubmission(submission){
 } 
 
 exports.getAssignmentById = async function getAssignmentById(id) {
-    const db = getDbInstance()
+    const db = getDbReference()
     const projection = {_id: 1, courseId: 1, title: 1, dueDate: 1, submissions: 0 }
     const collection = db.collection('assignments')
     const assignments = await collection.find({
@@ -49,7 +49,7 @@ exports.getAssignmentById = async function getAssignmentById(id) {
 }
 
 exports.getAllSubmissions = async function getAllSubmissions(assignmentId, reqPage) {
-    const db = getDbInstance()
+    const db = getDbReference()
     const projection = { submissions: 1 }
     const collection = db.collection('assignments')
     const assignments = await collection.find({
@@ -89,7 +89,7 @@ exports.getAllSubmissions = async function getAllSubmissions(assignmentId, reqPa
 }
 
 exports.updateAssignmentById = async function updateAssignmentById(id, updatedAssignment){
-    const db = getDbInstance()
+    const db = getDbReference()
     const collection = db.collection('assignments')
   
     updatedAssignment = extractValidFields(updatedAssignment, AssignmentSchema)
@@ -98,7 +98,7 @@ exports.updateAssignmentById = async function updateAssignmentById(id, updatedAs
 }
 
 exports.deleteAssignmentById = async function deleteAssignmentById(id){
-    const db = getDbInstance()
+    const db = getDbReference()
     const collection = db.collection('assignments')
   
     const result = await collection.deleteOne({_id: ObjectId(id)})

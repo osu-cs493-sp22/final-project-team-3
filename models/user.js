@@ -70,7 +70,7 @@ exports.getInstructorCourses = getInstructorCourses
 async function getStudentCourses(id){
     const db = getDbReference()
     const collection = db.collection('courses')
-    const results = await collection.find({"enrolled": {$in:[new ObjectId(id)]}},{subject:0,number:0,title:0,term:0,instructorId:0,assignments:0}).toArray()
+    const results = await collection.find({"enrolledStudents": {$in:[new ObjectId(id)]}},{subject:0,number:0,title:0,term:0,instructorId:0,assignments:0}).toArray()
     return results
 }
 exports.getStudentCourses = getStudentCourses
