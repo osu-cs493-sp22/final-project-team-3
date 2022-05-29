@@ -18,7 +18,7 @@ const {
     getUserById
 } = require('../models/user')
 
-const { getCourseById } = require('../models/course')
+const { getCourseById, getEnrolledStudents } = require('../models/course')
 const req = require('express/lib/request')
 
 const router = Router()
@@ -42,10 +42,14 @@ async function isUserAuthorized(userId, courseId){
 
 async function isStudent(userId, courseId){
     const reqUser = await getUserById(userId, false)
-    const course = await getCourseById(courseId)
+    const enrolledStudents = await getEnrolledStudents(courseId)
     if(reqUser.role == "student"){
-        //determine if student is in the course
-        return true
+        enrolledStudents.forEach((student) => {
+            if(student._id == userId){
+                return true
+            }
+        })
+        return false
     }
     return false
 }

@@ -4,14 +4,10 @@ const router = Router()
 
 const {validateAgainstSchema, extractValidFields} = require('../lib/validation')
 const {requireAuthentication} = require('../lib/auth')
-const{
-    CourseSchema,
-    getCourseById
-} = require('../models/assignment')
 
 const { getUserById } = require('../models/user')
 
-const { getCourseById } = require('../models/course')
+const { CourseSchema, getCourseById, getCoursesPage, insertNewCourse, getEnrolledStudents } = require('../models/course')
 
 
 const req = require('express/lib/request')
