@@ -39,7 +39,7 @@ async function getCoursesPage(page){
     page = page < 1 ? 1 : page
     const offset = (page - 1) * pageSize
 
-    const results = await collection.find({}).sort({_id:1}).skip(offset).limit(pageSize).projection(projection).toArray()
+    const results = await collection.find({}, {subjectCode: 1, number: 1, title: 1, instructorId: 1}).sort({_id:1}).skip(offset).limit(pageSize).toArray()
 
     return{
         courses: results,
@@ -72,3 +72,14 @@ async function getEnrolledStudents(id){
 }
 
 exports.getEnrolledStudents = getEnrolledStudents
+
+exports.bulkInsertNewCourses = async function bulkInsertNewCourses(courses){
+    const coursesToInsert = courses.map(function (course){
+        const courseToInsert =  extractValidFields(course, CourseSchema)
+        return courseToInsert
+    })
+    const db = getDbReference()
+    const collection = db.collection('courses')
+    const result = await collection.insertMany(coursesToInsert)
+    return result.insertedIds
+}

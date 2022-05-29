@@ -80,7 +80,7 @@ router.post('/login', async function (req, res){
             console.log("in authenticated")
             const user = await getUserByEmail(req.body.email,false)
             console.log(user)
-            const token = generateAuthToken(req.body.email)
+            const token = generateAuthToken(user._id)
             res.status(200).send({token: token})
             }catch (err){
                 console.error(" -- Error:",err)

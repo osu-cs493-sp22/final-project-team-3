@@ -9,13 +9,15 @@ const AssignmentSchema = {
     courseId:    {required: true},
     title:       {required: true},
     dueDate:     {required: true},
-    submissions: {required: true}
+    points:      {required: true},
+    submissions: {required: false}
 }
 exports.AssignmentSchema = AssignmentSchema
 
 const EditableAssignmentSchema = {
     courseId:    {required: true},
     title:       {required: true},
+    points:      {required: true},
     dueDate:     {required: true}
 }
 exports.EditableAssignmentSchema = EditableAssignmentSchema
@@ -40,7 +42,7 @@ exports.insertNewSubmission = async function insertNewSubmission(submission){
 
 exports.getAssignmentById = async function getAssignmentById(id) {
     const db = getDbReference()
-    const projection = {_id: 1, courseId: 1, title: 1, dueDate: 1, submissions: 0 }
+    const projection = {_id: 1, courseId: 1, title: 1, dueDate: 1, points: 1 }
     const collection = db.collection('assignments')
     const assignments = await collection.find({
         _id: new ObjectId(id)
@@ -103,4 +105,15 @@ exports.deleteAssignmentById = async function deleteAssignmentById(id){
   
     const result = await collection.deleteOne({_id: ObjectId(id)})
     return result
+}
+
+exports.bulkInsertNewAssignments = async function bulkInsertNewAssignments(assignments){
+    const assignmentsToInsert = assignments.map(function (assignment){
+        const assignmentToInsert =  extractValidFields(assignment, AssignmentSchema)
+        return assignmentToInsert
+    })
+    const db = getDbReference()
+    const collection = db.collection('assignments')
+    const result = await collection.insertMany(assignmentsToInsert)
+    return result.insertedIds
 }

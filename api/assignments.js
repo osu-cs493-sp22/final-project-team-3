@@ -24,8 +24,11 @@ const req = require('express/lib/request')
 const router = Router()
 
 async function isUserAuthorized(userId, courseId){
+    console.log("==userId ", userId, " courseId ", courseId)
     const reqUser = await getUserById(userId, false)
     const course = await getCourseById(courseId)
+    console.log("==reqUser ", reqUser)
+
     switch(reqUser.role){
         case "admin":
             return true
@@ -103,6 +106,7 @@ router.delete('/:id', requireAuthentication, async function (req, res, next) {
 
 router.get('/:id/submissions', requireAuthentication, async function (req, res, next) {
     const id = req.params.id
+    const assignment = await getAssignmentById(id)
     const isAuthorized = await isUserAuthorized(req.user, assignment.courseId)
     const submissions = await getAllSubmissions(id, req.query.page)
     if (submissions && isAuthorized) {
