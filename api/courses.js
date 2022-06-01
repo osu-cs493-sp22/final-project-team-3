@@ -7,7 +7,7 @@ const {requireAuthentication} = require('../lib/auth')
 
 const { getUserById } = require('../models/user')
 
-const { CourseSchema, getCourseById, getCoursesPage, insertNewCourse, getEnrolledStudents } = require('../models/course')
+const { CourseSchema, EditableCourseSchema, getCourseById, updateCourseById,deleteCourseById, getCoursesPage, insertNewCourse, getEnrolledStudents, updateEnrolledStudents, getCourseAssignments, getCourseRoster } = require('../models/course')
 
 
 const req = require('express/lib/request')
@@ -69,20 +69,85 @@ router.get('/', async function(req,res,next){
 
 router.post('/', requireAuthentication, async function (req,res,next){
     const isAuthorized = await isUserAdmin(req.user)
-    if(isAuthorized){
-        if(validateAgainstSchema(req.body,CourseSchema)){
-            const id = await insertNewCourse(req.body)
-            res.status(201).send({id: id})
+    const course = await getCourseById(id)
+    if(course){
+        if(isAuthorized){
+            if(validateAgainstSchema(req.body,CourseSchema)){
+                const id = await insertNewCourse(req.body)
+                res.status(201).send({id: id})
+            }else{
+                res.status(400).send({
+                    err: "Request body is not a valid course"
+                })
+            }
         }else{
-            res.status(400).send({
-                err: "Request body is not a valid course"
+            res.status(403).send({
+                err: "Requesting user is not authorized for this action"
             })
         }
-    }else{
+    } else{
+        next()
+    }
+    
+})
+
+/*
+ * /Courses/{id} Endpoints
+*/
+
+router.get("/:id", async function(req,res,next){
+    const id = req.params.id
+    const course = await getCourseById(id)
+    if(course) {
+        res.status(200).send(course)
+    } else {
+        next()
+    }
+})
+
+router.patch("/:id", requireAuthentication, async function(req,res,next){
+    const id = req.params.id
+    const isAuthorized = await isUserAuthorized(req.user,id)
+    const course = await getCourseById(id)
+    if(course){
+        if(isAuthorized) {
+            if (validateAgainstSchema(req.body, EditableCourseSchema)) {
+                await updateCourseById(id, req.body)
+                res.status(200).send({ CourseUpdated: "Course Sucessfully Updated!"})
+            } else {
+                res.status(400).send({
+                    err: "Request body is not a valid Course"
+                })
+            }
+        } else {
+            res.status(403).send({
+                err: "Requesting user is not authorized for this action"
+            })
+        }
+    } else{
+        next()
+    }
+    
+    
+})
+
+router.delete("/:id", requireAuthentication, async function(req,res,next){
+    const id = req.params.id
+    const isAuthorized = await isUserAuthorized(req.user,id)
+    const course = await getCourseById(id)
+    if(isAuthorized) {
+        if (course) {
+            await deleteCourseById(id)
+            res.status(204).send({ CourseDeleted: "Course Sucessfully Deleted!"})
+        } else {
+            next()
+        }
+    } else {
         res.status(403).send({
             err: "Requesting user is not authorized for this action"
         })
     }
+    
 })
 
 
@@ -90,16 +155,77 @@ router.post('/', requireAuthentication, async function (req,res,next){
 router.get("/:id/students",requireAuthentication,async function(req,res,next){
     const id = req.params.id
     const isAuthorized = await isUserAuthorized(req.user, id)
-    if(isAuthorized){
-        const studentsEnrolled = await getEnrolledStudents(id)
-        res.status(200).send({students: studentsEnrolled})
-    }else{
-        res.status(403).send({
-            err: "Requesting user is not authorized for this action"
-        })
+    const course = await getCourseById(id)
+    if(course){
+        if(isAuthorized){
+            const studentsEnrolled = await getEnrolledStudents(id)
+            res.status(200).send(studentsEnrolled)
+        }else{
+            res.status(403).send({
+                err: "Requesting user is not authorized for this action"
+            })
+        }
+    } else{
+        next()
+    }
+    
+})
+
+router.post("/:id/students",requireAuthentication,async function(req,res,next){
+    const id = req.params.id
+    const course = await getCourseById(id)
+    if(course){
+        if(req.body.enrolledStudents){
+            // const change = req.body.change
+            const updater = req.body.enrolledStudents.toString()
+            const updaterlist = updater.split(',')
+            console.log("===== updater: ", updater) 
+            const isAuthorized = await isUserAuthorized(req.user, id)
+            if(isAuthorized){
+                const studentsEnrolled = await updateEnrolledStudents(id,updaterlist)
+                res.status(200).send({enrolledStudents: studentsEnrolled})
+            }else{
+                res.status(403).send({
+                    err: "Requesting user is not authorized for this action"
+                })
+            }
+        } else {
+            res.status(400).send({err: "need a change and an enrolledStudents in request body"})
+        }
+    } else {
+        next()
+    }  
+})
+
+router.get("/:id/assignments",async function (req,res,next){
+    const id = req.params.id
+    const course = await getCourseById(id)
+    if(course){
+        const assignments = await getCourseAssignments(id)
+        res.status(200).send({assignments: assignments})
+    } else {
+        next()
     }
 })
 
+router.get("/:id/roster",requireAuthentication,async function (req,res,next){
+    const id = req.params.id
+    const course = await getCourseById(id)
+    const isAuthorized = await isUserAuthorized(req.user, id)
+    if(course){
+        if(isAuthorized){
+            const roster = await getCourseRoster(id)
+            res.status(200).send(`${roster}`)
+        }else{
+            res.status(403).send({
+                err: "Requesting user is not authorized for this action"
+            })
+        }
+        
+    } else {
+        next()
+    }
+})
 
 
 
