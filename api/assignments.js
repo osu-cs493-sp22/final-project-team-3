@@ -1,6 +1,9 @@
 const { Router } = require('express')
 const bcrypt = require('bcryptjs')
 
+const multer = require('multer')
+const crypto = require('crypto')
+
 const { validateAgainstSchema, extractValidFields } = require('../lib/validation')
 const { requireAuthentication } = require('../lib/auth')
 const {
@@ -8,10 +11,13 @@ const {
   EditableAssignmentSchema,
   insertNewAssignment,
   insertNewSubmission,
+  insertNewSubmissionFile,
   getAssignmentById,
   getAllSubmissions,
   updateAssignmentById,
-  deleteAssignmentById
+  deleteAssignmentById,
+  removeUploadedFile,
+  getSubmissionById
 } = require('../models/assignment')
 
 const {
@@ -22,6 +28,26 @@ const { getCourseById, getEnrolledStudents } = require('../models/course')
 const req = require('express/lib/request')
 
 const router = Router()
+
+
+const fileTypes = {
+    'image/jpeg': 'jpg',
+    'image/png': 'png'
+}
+  
+const upload = multer({ 
+   storage: multer.diskStorage({
+    destination: `${__dirname}/uploads`,
+    filename: function(req, file, callback){
+        const ext = fileTypes[file.mimetype]
+        const filename = crypto.pseudoRandomBytes(16).toString('hex')
+        callback( null ,`${filename}.${ext}`)
+    }
+   }),
+    fileFilter: function (req, file, callback){
+      callback(null, !!fileTypes[file.mimetype])
+    }
+})
 
 async function isUserAuthorized(userId, courseId){
     console.log("==userId ", userId, " courseId ", courseId)
@@ -107,19 +133,40 @@ router.delete('/:id', requireAuthentication, async function (req, res, next) {
 router.get('/:id/submissions', requireAuthentication, async function (req, res, next) {
     const id = req.params.id
     const assignment = await getAssignmentById(id)
-    const isAuthorized = await isUserAuthorized(req.user, assignment.courseId)
+    //const isAuthorized = await isUserAuthorized(req.user, assignment.courseId)
     const submissions = await getAllSubmissions(id, req.query.page)
-    if (submissions && isAuthorized) {
+    if (submissions /* && isAuthorized*/) {
         res.status(200).send({submissions: submissions})
     } else {
         next()
     }
 })
+router.get('/submissions/:id', async function (req, res, next) {
+    const id = req.params.id
+    console.log("I AM IN THE SUBMISSION GET ID: ",id)
+    const assignment = await getSubmissionById(id)
+    if (assignment) {
+        res.status(200).send(assignment)
+    } else {
+        next()
+    }
+  })
 
-router.post('/:id/submissions', requireAuthentication, async function (req, res, next) {
-  const isAuthorized = await isStudent(req.user, req.body.courseId)
-  if (validateAgainstSchema(req.body, AssignmentSchema) && isAuthorized) {
-      const id = await insertNewSubmission(req.body)
+router.post('/:id/submissions', upload.single('submission'), requireAuthentication, async function (req, res, next) {
+  if (req.file) {
+      const submission = {
+          assignmentId: req.body.assignmentId,
+          userId: req.body.userId,
+          timestamp: req.body.timestamp,
+          path: req.file.path,
+          filename: req.file.filename,
+          mimetype: req.file.mimetype,
+          grade: req.body.grade,
+          url: `/${req.params.id}/submissions/download/${req.file.filename}`
+      }
+
+      const id = await insertNewSubmissionFile(submission)
+      await removeUploadedFile(req.file)
       res.status(201).send({ id: id })
   } else {
       res.status(400).send({
@@ -132,32 +179,4 @@ module.exports = router
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-module.exports = router
+//module.exports = router

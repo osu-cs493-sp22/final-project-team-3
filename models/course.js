@@ -128,7 +128,7 @@ exports.bulkInsertNewCourses = async function bulkInsertNewCourses(courses){
 async function getCourseAssignments(id) {
     db = getDbReference()
     const collection = db.collection('assignments')
-    const projection = {_id: 0, courseId: 1, title: 1, dueDate: 1, points: 1 }
+    const projection = {_id: 1, title: 1, dueDate: 1, points: 1 }
 
     const assignments = collection.find({courseId: id}).project(projection).toArray()
     return assignments
