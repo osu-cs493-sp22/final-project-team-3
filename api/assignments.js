@@ -17,7 +17,8 @@ const {
   updateAssignmentById,
   deleteAssignmentById,
   removeUploadedFile,
-  getSubmissionById
+  getSubmissionById,
+  getSubmissionDownloadStream
 } = require('../models/assignment')
 
 const {
@@ -173,6 +174,25 @@ router.post('/:id/submissions', upload.single('submission'), requireAuthenticati
           err: "Request body is not a valid Submission"
       })
   }
+})
+
+router.get('/:id/submissions/download/:filename',requireAuthentication, async function (req,res,next){
+    const isAuthorized = await isUserAuthorized(req.user, req.body.courseId)
+    if(isAuthorized){
+        getSubmissionDownloadStream(req.params.filename)
+            .on('file',function(file){
+                res.status(200).type(file.filename)
+            })
+            .on('error',function (err){
+                if(err.code === 'ENOENT'){
+                    next()
+                } else {
+                    next(err)
+                }
+            })
+            .pipe(res)
+    }
+    
 })
 
 module.exports = router

@@ -170,3 +170,9 @@ exports.bulkInsertNewAssignments = async function bulkInsertNewAssignments(assig
     const result = await collection.insertMany(assignmentsToInsert)
     return result.insertedIds
 }
+
+exports.getSubmissionDownloadStream = function (filename) {
+  const db = getDbReference()
+  const bucket = new GridFSBucket(db, {bucketName: 'fs'})
+  return bucket.openDownloadStreamByName(filename)
+}
