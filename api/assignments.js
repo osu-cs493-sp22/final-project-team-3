@@ -164,9 +164,9 @@ router.post('/:id/submissions', upload.single('submission'), requireAuthenticati
           grade: req.body.grade,
           url: `/${req.params.id}/submissions/download/${req.file.filename}`
       }
-
+      //console.log("submission: ", submission)
       const id = await insertNewSubmissionFile(submission)
-      await removeUploadedFile(req.file)
+      //await removeUploadedFile(req.file)
       res.status(201).send({ id: id })
   } else {
       res.status(400).send({

@@ -110,8 +110,8 @@ exports.getAllSubmissions = async function getAllSubmissions(assignmentId, reqPa
     const db = getDbReference()
     const bucket = new GridFSBucket(db, {bucketName: 'fs'})
     console.log("assignmentId ====================== ",assignmentId)
-    const submissions = await bucket.find({assignmentId: assignmentId}).toArray()
-
+    const submissions = await bucket.find({'metadata.assignmentId': assignmentId}).toArray()
+    console.log("submissions count: ",submissions)
     // Pagination //
     let page = parseInt(reqPage) || 1;
     const numPerPage = 10;
