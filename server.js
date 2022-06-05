@@ -5,6 +5,8 @@
 const express = require('express')
 const morgan = require('morgan')
 const redis = require('redis')
+const secret = "SuperSecret"
+const jwt = require('jsonwebtoken')
 
 const { connectToDb } = require('./lib/mongo')
 const api = require('./api')
@@ -22,37 +24,79 @@ const rateLimitMaxRequestWithoutAuth = 10
 const rateLimitWindowMs = 60000
 
 async function rateLimit(req,res,next){
+  console.log("in rate limit")
   const ip = req.ip
+  const authHeader = req.get('authorization')|| ''
+  const authParts = authHeader.split(' ')
+  const token = authParts[0] === 'Bearer' ? authParts[1] : null
+  console.log("==token:",token)
   //const 
   let tokenBucket
-  try{
-    tokenBucket = await redisClient.hGetAll(ip)
-  }catch(e){
-    next()
-    return
-  }
-  console.log("== tokenBucket before:",tokenBucket)
-  tokenBucket = {
-    tokens: parseFloat(tokenBucket.tokens)|| rateLimitMaxRequestWithoutAuth,
-    last: parseInt(tokenBucket.last)||Date.now()
-  }
-  console.log("== tokenBucket after:",tokenBucket)
+  try{ //token rate limiting
+    console.log("in first try block")
+    const payload = jwt.verify(token,secret)
+    console.log(" ==rateLimit payload verify:",payload)
+    req.user = payload.sub
+    try{
+      tokenBucket = await redisClient.hGetAll(req.user)
+    }catch(e){
+      next()
+      return
+    }
+    console.log("== Auth - tokenBucket before:",tokenBucket)
+    tokenBucket = {
+      tokens: parseFloat(tokenBucket.tokens)|| rateLimitMaxRequestWithAuth,
+      last: parseInt(tokenBucket.last)||Date.now()
+    }
+    console.log("== Auth - tokenBucket after:",tokenBucket)
 
-  const now = Date.now()
-  const ellapsedMs = now - tokenBucket.last
-  tokenBucket.tokens +=ellapsedMs*(rateLimitMaxRequestWithoutAuth/rateLimitWindowMs)
-  tokenBucket.tokens = Math.min(rateLimitMaxRequestWithoutAuth,tokenBucket.tokens)
-  tokenBucket.last = now
+    const now = Date.now()
+    const ellapsedMs = now - tokenBucket.last
+    tokenBucket.tokens +=ellapsedMs*(rateLimitMaxRequestWithAuth/rateLimitWindowMs)
+    tokenBucket.tokens = Math.min(rateLimitMaxRequestWithAuth,tokenBucket.tokens)
+    tokenBucket.last = now
 
-  if(tokenBucket.tokens >=1){
-    tokenBucket.tokens -=1
-    await redisClient.hSet(ip,[['tokens',tokenBucket.tokens],['last',tokenBucket.last]])
-    next()
-  }else{
-    await redisClient.hSet(ip,[['tokens',tokenBucket.tokens],['last',tokenBucket.last]])
-    res.status(429).send({
-      err:"Too many requests per minute"
-    })
+    if(tokenBucket.tokens >=1){
+      tokenBucket.tokens -=1
+      await redisClient.hSet(req.user,[['tokens',tokenBucket.tokens],['last',tokenBucket.last]])
+      next()
+    }else{
+      await redisClient.hSet(req.user,[['tokens',tokenBucket.tokens],['last',tokenBucket.last]])
+      res.status(429).send({
+        err:"Too many requests per minute from authorized token"
+      })
+    }
+  }catch(err){ //ip rate limiting
+    console.log(err)
+    try{
+      tokenBucket = await redisClient.hGetAll(ip)
+    }catch(e){
+      next()
+      return
+    }
+    console.log("== Non-Auth tokenBucket before:",tokenBucket)
+    tokenBucket = {
+      tokens: parseFloat(tokenBucket.tokens)|| rateLimitMaxRequestWithoutAuth,
+      last: parseInt(tokenBucket.last)||Date.now()
+    }
+    console.log("== Non-Auth tokenBucket after:",tokenBucket)
+
+    const now = Date.now()
+    const ellapsedMs = now - tokenBucket.last
+    tokenBucket.tokens +=ellapsedMs*(rateLimitMaxRequestWithoutAuth/rateLimitWindowMs)
+    tokenBucket.tokens = Math.min(rateLimitMaxRequestWithoutAuth,tokenBucket.tokens)
+    tokenBucket.last = now
+
+    if(tokenBucket.tokens >=1){
+      tokenBucket.tokens -=1
+      await redisClient.hSet(ip,[['tokens',tokenBucket.tokens],['last',tokenBucket.last]])
+      next()
+    }else{
+      await redisClient.hSet(ip,[['tokens',tokenBucket.tokens],['last',tokenBucket.last]])
+      res.status(429).send({
+        err:"Too many requests per minute from ip"
+      })
+    }
   }
 }
 
