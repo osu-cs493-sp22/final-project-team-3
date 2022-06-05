@@ -44,7 +44,7 @@ exports.insertNewSubmission = async function insertNewSubmission(submission){
 exports.insertNewSubmissionFile = async function insertNewSubmissionFile(submission){
     return new Promise(function(resolve,reject){
         const db = getDbReference()
-        const bucket = new GridFSBucket(db, {bucketname: 'submissions'})
+        const bucket = new GridFSBucket(db, {bucketname: 'test'})
         const metadata = {
             assignmentId: submission.assignmentId,
             userId: submission.userId,
@@ -92,7 +92,7 @@ exports.getAssignmentById = async function getAssignmentById(id) {
 
 exports.getSubmissionById = async function getSubmissionById(id) {
     const db = getDbReference()
-    const bucket = new GridFSBucket(db, {bucketName: 'submissions'})
+    const bucket = new GridFSBucket(db, {bucketName: 'fs'})
     if (!ObjectId.isValid(id)) {
         console.log("NOT A VALID ID")
       return null
@@ -108,7 +108,7 @@ exports.getSubmissionById = async function getSubmissionById(id) {
 
 exports.getAllSubmissions = async function getAllSubmissions(assignmentId, reqPage) {
     const db = getDbReference()
-    const bucket = new GridFSBucket(db, {bucketName: 'submissions'})
+    const bucket = new GridFSBucket(db, {bucketName: 'fs'})
     console.log("assignmentId ====================== ",assignmentId)
     const submissions = await bucket.find({assignmentId: assignmentId}).toArray()
 
