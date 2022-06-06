@@ -1,5 +1,6 @@
-const {ObjectId} = require('mongodb')
+const {ObjectId,GridFSBucket} = require('mongodb')
 const bcrypt = require('bcryptjs')
+const fs = require('fs')
 
 const {extractValidFields} = require('../lib/validation')
 const {getDbReference} = require('../lib/mongo')
@@ -38,7 +39,46 @@ exports.insertNewSubmission = async function insertNewSubmission(submission){
     submission = extractValidFields(submission, SubmissionSchema)
     const result = await collection.insertOne(submission)
     return result.insertedId
+}
+
+exports.insertNewSubmissionFile = async function insertNewSubmissionFile(submission){
+    return new Promise(function(resolve,reject){
+        const db = getDbReference()
+        const bucket = new GridFSBucket(db, {bucketname: 'test'})
+        const metadata = {
+            assignmentId: submission.assignmentId,
+            userId: submission.userId,
+            timestamp: submission.timestamp,
+            grade: submission.grade,
+            url: submission.url
+        }
+        console.log("metadata: ", metadata)
+        const uploadStream = bucket.openUploadStream(submission.filename, {
+            metadata: metadata
+        })
+        fs.createReadStream(submission.path).pipe(uploadStream)
+        .on('error',function(err){
+           reject(err)
+        })
+        .on('finish',function(result) {
+           console.log("== stream results: ", result)
+           resolve(result._id)
+        })
+    })
 } 
+
+async function removeUploadedFile(file) {
+    return new Promise((resolve, reject) => {
+      fs.unlink(file.path, (err) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve();
+        }
+      });
+    });
+  }
+  exports.removeUploadedFile = removeUploadedFile
 
 exports.getAssignmentById = async function getAssignmentById(id) {
     const db = getDbReference()
@@ -50,15 +90,28 @@ exports.getAssignmentById = async function getAssignmentById(id) {
     return assignments[0]
 }
 
+exports.getSubmissionById = async function getSubmissionById(id) {
+    const db = getDbReference()
+    const bucket = new GridFSBucket(db, {bucketName: 'fs'})
+    if (!ObjectId.isValid(id)) {
+        console.log("NOT A VALID ID")
+      return null
+    } else {
+        console.log("IS VALID ID")
+      const results = await bucket
+        .find({ _id: new ObjectId(id) })
+        .toArray()
+        console.log("RESULTS: ",results)
+      return results[0]
+    }
+}
+
 exports.getAllSubmissions = async function getAllSubmissions(assignmentId, reqPage) {
     const db = getDbReference()
-    const projection = { submissions: 1 }
-    const collection = db.collection('assignments')
-    const assignments = await collection.find({
-        _id: new ObjectId(assignmentId)
-    }).project(projection).toArray()
-    const submissions = assignments[0]
-
+    const bucket = new GridFSBucket(db, {bucketName: 'fs'})
+    console.log("assignmentId ====================== ",assignmentId)
+    const submissions = await bucket.find({'metadata.assignmentId': assignmentId}).toArray()
+    console.log("submissions count: ",submissions)
     // Pagination //
     let page = parseInt(reqPage) || 1;
     const numPerPage = 10;
@@ -116,4 +169,10 @@ exports.bulkInsertNewAssignments = async function bulkInsertNewAssignments(assig
     const collection = db.collection('assignments')
     const result = await collection.insertMany(assignmentsToInsert)
     return result.insertedIds
+}
+
+exports.getSubmissionDownloadStream = function (filename) {
+  const db = getDbReference()
+  const bucket = new GridFSBucket(db, {bucketName: 'fs'})
+  return bucket.openDownloadStreamByName(filename)
 }

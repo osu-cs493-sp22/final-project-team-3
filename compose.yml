@@ -1,4 +1,6 @@
 services:
+  redis:
+    image: redis
   db:
     image: mongo
     environment:
@@ -7,7 +9,6 @@ services:
       MONGO_INITDB_DATABASE: ${MONGO_DB_NAME}
     env_file:
       - .env
-
   db-init:
     build: .
     environment:
@@ -24,7 +25,6 @@ services:
     command: npm run initdb
     env_file:
       - .env
-
   api:
     build: .
     ports:
@@ -39,4 +39,5 @@ services:
     depends_on:
       - db
       - db-init
+      - redis
     restart: on-failure

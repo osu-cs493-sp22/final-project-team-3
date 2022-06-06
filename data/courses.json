@@ -4,13 +4,15 @@
         "number": "493",
         "title": "Cloud Application Development",
         "term": "sp22",
-        "instructorId": 2
+        "instructorId": 2,
+        "enrolledStudents":[]
     },
     {
         "subject": "CS",
         "number": "463",
         "title": "Capstone 3",
         "term": "sp22",
-        "instructorId": 2
+        "instructorId": 2,
+        "enrolledStudents":[]
     }
 ]
