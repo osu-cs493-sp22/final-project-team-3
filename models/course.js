@@ -5,10 +5,11 @@ const {extractValidFields} = require('../lib/validation')
 const {getDbReference} = require('../lib/mongo')
 
 const CourseSchema = {
-    subjectCode:      {required: true},
+    subject:          {required: true},
     number:           {required: true},
     title:            {required: true},
     instructorId:     {required: true},
+    term:             {required: true},
     enrolledStudents: {required: false},
     assignments:      {required: false}
 }
@@ -29,7 +30,7 @@ exports.getCourseById = getCourseById
 
 async function getCoursesPage(page){
     const db = getDbReference()
-    const projection = {_id: 1, subjectCode : 1, number : 1, title : 1, instructorId : 1, enrolledStudents : 0, assignments : 0}
+    const projection = {_id: 1, subject : 1, number : 1, title : 1, instructorId : 1, term : 1}
     const collection = db.collection('courses')
     const count = await collection.countDocuments()
 

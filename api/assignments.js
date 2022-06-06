@@ -59,6 +59,11 @@ async function isStudent(userId, courseId){
 
 router.post('/', requireAuthentication, async function (req, res, next) {
   const isAuthorized = await isUserAuthorized(req.user, req.body.courseId)
+  if(!isAuthorized){
+    res.status(403).send({
+        err: "User not Authorized"
+    }) 
+  }
   if (validateAgainstSchema(req.body, AssignmentSchema) && isAuthorized) {
       const id = await insertNewAssignment(req.body)
       res.status(201).send({ id: id })
@@ -83,6 +88,11 @@ router.patch('/:id', requireAuthentication, async function (req, res, next) {
   const id = req.params.id
   const isAuthorized = await isUserAuthorized(req.user, req.body.courseId)
   // Cannot Edit Submissions within this endpoint
+  if(!isAuthorized){
+    res.status(403).send({
+        err: "User not Authorized"
+    }) 
+  }
   if (validateAgainstSchema(req.body, EditableAssignmentSchema) && isAuthorized) {
     await updateAssignmentById(id, req.body)
     res.status(200).send({ AssignmentUpdated: "Assignment Sucessfully Updated!"})
@@ -98,6 +108,11 @@ router.delete('/:id', requireAuthentication, async function (req, res, next) {
   const id = req.params.id
   const assignment = await getAssignmentById(id)
   const isAuthorized = await isUserAuthorized(req.user, assignment.courseId)
+  if(!isAuthorized){
+    res.status(403).send({
+        err: "User not Authorized"
+    }) 
+  }
   if(isAuthorized){
     await deleteAssignmentById(id)
   }
@@ -109,6 +124,11 @@ router.get('/:id/submissions', requireAuthentication, async function (req, res, 
     const assignment = await getAssignmentById(id)
     const isAuthorized = await isUserAuthorized(req.user, assignment.courseId)
     const submissions = await getAllSubmissions(id, req.query.page)
+    if(!isAuthorized){
+        res.status(403).send({
+            err: "User not Authorized"
+        }) 
+      }
     if (submissions && isAuthorized) {
         res.status(200).send({submissions: submissions})
     } else {
@@ -118,6 +138,11 @@ router.get('/:id/submissions', requireAuthentication, async function (req, res, 
 
 router.post('/:id/submissions', requireAuthentication, async function (req, res, next) {
   const isAuthorized = await isStudent(req.user, req.body.courseId)
+  if(!isAuthorized){
+    res.status(403).send({
+        err: "User not Authorized"
+    }) 
+  }
   if (validateAgainstSchema(req.body, AssignmentSchema) && isAuthorized) {
       const id = await insertNewSubmission(req.body)
       res.status(201).send({ id: id })
