@@ -10,6 +10,7 @@ const jwt = require('jsonwebtoken')
 
 const { connectToDb } = require('./lib/mongo')
 const api = require('./api')
+const { connect } = require('./api')
 
 const app = express()
 const port = process.env.PORT || 8000
@@ -17,7 +18,8 @@ const port = process.env.PORT || 8000
 const redisHost = process.env.REDIS_HOST || 'localhost'
 const redisPort = process.env.REDIS_PORT || 6379
 
-const redisClient = redis.createClient(redisHost,redisPort)
+//const redisClient = redis.createClient(redisHost,redisPort)
+const redisClient = redis.createClient({url: `redis://${redisHost}:${redisPort}`})
 
 const rateLimitMaxRequestWithAuth = 30
 const rateLimitMaxRequestWithoutAuth = 10
@@ -135,9 +137,16 @@ app.use('*', function (err, req, res, next) {
   })
 })
 
-redisClient.connect().then(connectToDb(function () {
+ redisClient.connect().then(connectToDb(function () {
   app.listen(port, function () {
     console.log("== Server is running on port", port)
-  })
-})
-)
+   })
+ })
+ )
+
+// connectToDb.then(redisClient.connect().then(function(){
+//   app.listen(port, function () {
+//     console.log("== Server is running on port", port)
+//   })
+// })
+// )
