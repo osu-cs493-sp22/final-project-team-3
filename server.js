@@ -66,7 +66,7 @@ async function rateLimit(req,res,next){
         err:"Too many requests per minute from authorized token"
       })
     }
-  }catch(err){ //ip rate limiting
+  }catch(err){ //ip rate limiting, "err" as in no token existing
     console.log(err)
     try{
       tokenBucket = await redisClient.hGetAll(ip)
