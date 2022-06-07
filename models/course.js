@@ -99,16 +99,24 @@ async function getEnrolledStudents(id){
 }
 exports.getEnrolledStudents = getEnrolledStudents
 
-async function updateEnrolledStudents(id, updatedEnrolledStudents){
+async function updateEnrolledStudents(id, updatedEnrolledStudents,change){
     db = getDbReference()
     const collection = db.collection('courses')
     var result
 
     const update = updatedEnrolledStudents
     console.log(update)
-    for(var i in update){
-        result = await collection.updateMany({_id: ObjectId(id)}, {$push: {"enrolledStudents":update[i]}})
+    if(change === 'add'){
+        for(var i in update){
+            result = await collection.updateMany({_id: ObjectId(id)}, {$push: {"enrolledStudents":update[i]}})
+        }
+    } else {
+        for(var i in update){
+            result = await collection.updateMany({_id: ObjectId(id)}, {$pull: {"enrolledStudents": update[i]}})
+        }
     }
+    
+    
     
     return result
 }

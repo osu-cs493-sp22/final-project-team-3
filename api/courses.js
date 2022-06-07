@@ -176,19 +176,24 @@ router.post("/:id/students",requireAuthentication,async function(req,res,next){
     const course = await getCourseById(id)
     if(course){
         if(req.body.enrolledStudents){
-            // const change = req.body.change
-            const updater = req.body.enrolledStudents.toString()
-            const updaterlist = updater.split(',')
-            console.log("===== updater: ", updater) 
-            const isAuthorized = await isUserAuthorized(req.user, id)
-            if(isAuthorized){
-                const studentsEnrolled = await updateEnrolledStudents(id,updaterlist)
-                res.status(200).send({enrolledStudents: studentsEnrolled})
-            }else{
-                res.status(403).send({
-                    err: "Requesting user is not authorized for this action"
-                })
+            const change = req.body.change
+            if(change === 'remove' || change === 'add'){
+                const updater = req.body.enrolledStudents.toString()
+                const updaterlist = updater.split(',')
+                console.log("===== updater: ", updater) 
+                const isAuthorized = await isUserAuthorized(req.user, id)
+                if(isAuthorized){
+                    const studentsEnrolled = await updateEnrolledStudents(id,updaterlist,change)
+                    res.status(200).send({enrolledStudents: studentsEnrolled})
+                }else{
+                    res.status(403).send({
+                        err: "Requesting user is not authorized for this action"
+                    })
+                }
+            } else{
+                res.status(400).send({err: "change must be 'add' or 'remove'"})  
             }
+            
         } else {
             res.status(400).send({err: "need a change and an enrolledStudents in request body"})
         }
