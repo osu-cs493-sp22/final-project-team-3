@@ -103,7 +103,7 @@ router.post('/login', async function (req, res){
 router.get('/:id', requireAuthentication, async function (req, res, next){
     console.log("== req.user",req.user)
 
-    const permission = await getUserByEmail(req.user,false)
+    const permission = await getUserById(req.user,false)
     console.log("GET permission:",permission)
     const target = await getUserById(req.params.id,false)
     console.log("GET target:",target.role)
@@ -112,7 +112,7 @@ router.get('/:id', requireAuthentication, async function (req, res, next){
         res.status(200).send(coursesTaught)
     }else if(target.role === "student" && (permission.email === target.email || permission.role === "admin")){
         const coursesTaking = await getStudentCourses(req.params.id)
-        res.status(200).send(coursesTaking)
+        res.status(200).send({user: target, coursesEnrolled: coursesTaking})
     }else{
         console.log("something went wrong")
         res.status(403).send({

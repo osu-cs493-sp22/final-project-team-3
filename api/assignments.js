@@ -55,7 +55,9 @@ async function isUserAuthorized(userId, courseId){
     const reqUser = await getUserById(userId, false)
     const course = await getCourseById(courseId)
     console.log("==reqUser ", reqUser)
-
+    if(reqUser == undefined){
+        return false
+    }
     switch(reqUser.role){
         case "admin":
             return true
