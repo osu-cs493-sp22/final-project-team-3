@@ -1,6 +1,7 @@
 const { Router } = require('express')
 const bcrypt = require('bcryptjs')
 const router = Router()
+const fs = require('fs')
 
 const {validateAgainstSchema, extractValidFields} = require('../lib/validation')
 const {requireAuthentication} = require('../lib/auth')
@@ -195,7 +196,7 @@ router.post("/:id/students",requireAuthentication,async function(req,res,next){
             }
             
         } else {
-            res.status(400).send({err: "need a change and an enrolledStudents in request body"})
+            res.status(400).send({err: "need a change and an enrolled Students in request body"})
         }
     } else {
         next()
@@ -220,6 +221,7 @@ router.get("/:id/roster",requireAuthentication,async function (req,res,next){
     if(course){
         if(isAuthorized){
             const roster = await getCourseRoster(id)
+            fs.writeFileSync(`${course}.csv`,roster)
             res.status(200).send(`${roster}`)
         }else{
             res.status(403).send({
