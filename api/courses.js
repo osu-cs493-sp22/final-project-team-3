@@ -70,10 +70,10 @@ router.get('/', async function(req,res,next){
 
 router.post('/', requireAuthentication, async function (req,res,next){
     const isAuthorized = await isUserAdmin(req.user)
-    const course = await getCourseById(id)
-    if(course){
+    //const course = await getCourseById(id)
+    //if(course){
         if(isAuthorized){
-            if(validateAgainstSchema(req.body,CourseSchema)){
+            if(validateAgainstSchema(req.body, CourseSchema)){
                 const id = await insertNewCourse(req.body)
                 res.status(201).send({id: id})
             }else{
@@ -86,9 +86,9 @@ router.post('/', requireAuthentication, async function (req,res,next){
                 err: "Requesting user is not authorized for this action"
             })
         }
-    } else{
-        next()
-    }
+    // } else{
+    //     next()
+    // }
     
 })
 

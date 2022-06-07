@@ -149,7 +149,7 @@ router.delete('/:id', requireAuthentication, async function (req, res, next) {
 router.get('/:id/submissions', requireAuthentication, async function (req, res, next) {
     const id = req.params.id
     const assignment = await getAssignmentById(id)
-    //const isAuthorized = await isUserAuthorized(req.user, assignment.courseId)
+    const isAuthorized = await isUserAuthorized(req.user, assignment.courseId)
     const submissions = await getAllSubmissions(id, req.query.page)
     if(!isAuthorized){
         res.status(403).send({
